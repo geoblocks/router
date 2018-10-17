@@ -3,12 +3,12 @@ import {fromLonLat, toLonLat} from 'ol/proj.js';
 /**
  * @const {string}
  */
-const OSM_CH_ROUTED_FOOT_PROFILE_URL = 'https://routing.osm.ch/routed-foot';
+const OSM_CH_ROUTED_FOOT_PROFILE_URL = 'https://routing.osm.ch/routed-foot/route/v1/driving';
 
 /**
  * @const {string}
  */
-const OSRM_DEFAULT_PROFILE_URL = 'https://router.project-osrm.org';
+const OSRM_DEFAULT_PROFILE_URL = 'https://router.project-osrm.org/route/v1/driving';
 
 class OSRMRouter {
 
@@ -16,13 +16,14 @@ class OSRMRouter {
    * @param {Object} options
    * @property {ol.proj.Projection} options.mapProjection
    * @property {string} options.url The URL profile prefix to use, see *_PROFILE_URL.
+   * @property {string} options.extraParams Parameters like access token.
    */
   constructor(options) {
     /**
      * @private
      * @type {string}
      */
-    this.url_ = options.url + '/route/v1/driving';
+    this.url_ = options.url;
 
     /**
      * @private
@@ -35,6 +36,12 @@ class OSRMRouter {
      * @type {ol.proj.Projection}
      */
     this.mapProjection_ = options.mapProjection;
+
+    /**
+     * @private
+     * @type {string}
+     */
+    this.extraParams_ = options.extraParams;
   }
 
   /**
@@ -52,7 +59,11 @@ class OSRMRouter {
     const coordinateString = coordinates.map(c => c.join(',')).join(';');
     const radiuses = coordinates.map(() => this.radius_).join(';');
 
-    return fetch(`${this.url_}/${coordinateString}?radiuses=${radiuses}&geometries=geojson`)
+    let url = `${this.url_}/${coordinateString}?radiuses=${radiuses}&geometries=geojson`;
+    if (this.extraParams_) {
+      url += `&${this.extraParams_}`;
+    }
+    return fetch(url)
       .then(response => response.json())
       .then((jsonResponse) => {
         console.assert(jsonResponse.code === 'Ok');
