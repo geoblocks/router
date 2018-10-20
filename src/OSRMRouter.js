@@ -84,6 +84,13 @@ class OSRMRouter {
         pointTo.set('snapped', true);
       });
   }
+
+  /**
+   * @param {string} url
+   */
+  setUrl(url) {
+    this.url_ = url;
+  }
 }
 
 export default OSRMRouter;
